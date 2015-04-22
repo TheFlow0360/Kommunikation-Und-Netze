@@ -3,3 +3,4 @@ lib/libcnaiapi.a
 lib/libcnaiapi64.a
 echoclient.c
 echoserver.c
+include/inputtools.h

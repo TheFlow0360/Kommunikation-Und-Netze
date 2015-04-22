@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <cnaiapi.h>
 
+#include "include/inputtools.h"
+
 #define BUFFER_SIZE 1024
 
 int start(int aAppId)
@@ -15,7 +17,7 @@ int start(int aAppId)
         printf( "Error while establishing connection.\n" );
         return 1;
     }
-    printf( "Connection established.\n" );
+    printf( "Connection with client established.\n" );
     while( 1 ) {
         char buffer[BUFFER_SIZE];
         int length = read( con, buffer, BUFFER_SIZE );
@@ -27,6 +29,11 @@ int start(int aAppId)
         } else if ( length == 0 ) {
             printf( "End of stream.\n" );
             continue;
+        }
+
+        if ( InputEquals( "exit", length, buffer ) ) {
+            printf( "Shutdown command received.\n" );
+            break;
         }
 
         length = write( con, buffer, length );

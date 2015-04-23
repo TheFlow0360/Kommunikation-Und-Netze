@@ -4,16 +4,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "include/inputtools.h"
-
 #define BUFFER_SIZE 1024
+
+int InputEquals( char const aText[], int aTextLength, char const aInput[] )
+{
+    for ( int i = 0; i < ( aTextLength - 1 ); i++ ) {
+        if ( aText[i] != aInput[i] ) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 int start( int appId )
 {
     computer comp = cname_to_comp( "localhost" );
     connection con = make_contact( comp, appId );
-    int buffer[BUFFER_SIZE];
-    while( 1 ) {
+    char buffer[BUFFER_SIZE];
+    while ( 1 ) {
     printf( "Input:\n" );
         int length = read( 0, buffer, BUFFER_SIZE );
 
@@ -25,6 +33,14 @@ int start( int appId )
         write( con, buffer, length );
         printf( "Receiving from server...\n" );
         length = read( con, buffer, BUFFER_SIZE );
+        if ( -1 == length ) {
+            printf( "Error while reading server response. Terminating...\n" );
+            return 1;
+        } else if ( 0 == length ) {
+            printf( "No output returned.\n" );
+            continue;
+        }
+
         write( 1, buffer, length );
     }
 

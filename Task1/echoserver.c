@@ -18,7 +18,6 @@ int InputEquals( char const aText[], int aTextLength, char const aInput[] )
 
 int start( int aPort )
 {
-    int errorCode;
     while ( 1 ) {
         printf( "Waiting for connection...\n" );
         connection con = await_contact( aPort );
@@ -33,7 +32,6 @@ int start( int aPort )
 
             if ( -1 == length ) {
                 printf( "Error while reading.\n" );
-                errorCode = 1;
                 break;
             } else if ( 0 == length ) {
                 printf( "Connection closed by client.\n" );
@@ -43,17 +41,15 @@ int start( int aPort )
 
             if ( InputEquals( "shutdown", length, buffer ) ) {
                 printf( "Shutdown command received.\n" );
-                errorCode = 0;
-                return errorCode;
+                return 0;
             }
 
-            length = write( con, buffer, length );
-
+            write( con, buffer, length );
         }
 
         end_contact(con);
     }
-    return errorCode;
+    return 0;
 }
 
 int main(int argc, char *argv[])

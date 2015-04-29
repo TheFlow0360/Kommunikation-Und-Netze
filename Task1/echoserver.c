@@ -16,12 +16,12 @@ int InputEquals( char const aText[], int aTextLength, char const aInput[] )
     return 1;
 }
 
-int start(int aAppId)
+int start( int aPort )
 {
     int errorCode;
     while ( 1 ) {
         printf( "Waiting for connection...\n" );
-        connection con = await_contact( aAppId );
+        connection con = await_contact( aPort );
         if ( -1 == con ) {
             printf( "Error while establishing connection.\n" );
             return 1;
@@ -36,8 +36,8 @@ int start(int aAppId)
                 errorCode = 1;
                 break;
             } else if ( 0 == length ) {
-                printf( "End of stream.\n" );
-                continue;
+                printf( "Connection closed by client.\n" );
+                break;
             }
             printf( "Received message from client.\n" );
 
@@ -59,15 +59,15 @@ int start(int aAppId)
 int main(int argc, char *argv[])
 {
     if ( argc < 2 ) {
-        printf( "Argument missing.\n" );
+        printf( "Argument missing: Port.\n" );
         return 1;
     }
 
-    int appId = atoi( argv[1] );
-    if ( appId <= 1024 ) {
-        printf( "Invalid AppId: %d\n", appId );
+    int port = atoi( argv[1] );
+    if ( port <= 1024 ) {
+        printf( "Invalid Port: %d\n", port );
         return 1;
     }
 
-    return start( appId );
+    return start( port );
 }

@@ -16,10 +16,16 @@ int InputEquals( char const aText[], int aTextLength, char const aInput[] )
     return 1;
 }
 
-int start( int appId )
+int start( int aPort , char* aHost )
 {
-    computer comp = cname_to_comp( "localhost" );
-    connection con = make_contact( comp, appId );
+    computer comp = cname_to_comp( aHost );
+    connection con = make_contact( comp, aPort );
+
+    if ( -1 == con ) {
+        printf( "Could not connect to server.\n" );
+        return 1;
+    }
+
     char buffer[BUFFER_SIZE];
     while ( 1 ) {
     printf( "Input:\n" );
@@ -50,15 +56,19 @@ int start( int appId )
 int main(int argc, char *argv[])
 {
     if ( argc < 2 ) {
-        printf( "Argument missing.\n" );
+        printf( "Argument missing: Port.\n" );
         return 1;
     }
 
-    int appId = atoi( argv[1] );
-    if ( appId <= 1024 ) {
-        printf( "Invalid AppId: %d\n", appId );
+    int port = atoi( argv[1] );
+    if ( port <= 1024 ) {
+        printf( "Invalid Port: %d\n", port );
         return 1;
     }
 
-    return start( appId );
+    if ( argc < 3 ) {
+        return start( port , "localhost" );
+    }
+
+    return start( port, argv[2] );
 }

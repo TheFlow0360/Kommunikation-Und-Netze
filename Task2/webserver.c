@@ -23,7 +23,7 @@ void* handleConnection(void* aCon)
     if ( length == -1 ) {
         printf( "\nError while reading." );
         // TODO errorcodes
-        return nullptr;
+        return 0;
     } else if ( length == BUFFER_SIZE ) {
         int offset = BUFFER_SIZE;
         while ( 1 ) {
@@ -34,7 +34,7 @@ void* handleConnection(void* aCon)
             if ( length == -1 ) {
                 printf( "\nError while reading." );
                 // TODO errorcodes
-                return nullptr;
+                return 0;
             } else if ( length != BUFFER_SIZE ) {
                 totalLength = offset + length;
                 break;
@@ -57,7 +57,7 @@ void* handleConnection(void* aCon)
 
     free( buffer );
 
-    return nullptr;
+    return 0;
 }
 
 int start( int aPort )

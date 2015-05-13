@@ -2,3 +2,5 @@ include/cnaiapi.h
 lib/libcnaiapi.a
 lib/libcnaiapi64.a
 webserver.c
+request.h
+request.c

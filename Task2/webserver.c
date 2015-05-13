@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include <cnaiapi.h>
+#include "request.h"
 
 #define BUFFER_SIZE ( 80 * sizeof(char) )
 
@@ -22,7 +23,7 @@ void* handleConnection(void* aCon)
     if ( length == -1 ) {
         printf( "\nError while reading." );
         // TODO errorcodes
-        return (void*) 1;
+        return nullptr;
     } else if ( length == BUFFER_SIZE ) {
         int offset = BUFFER_SIZE;
         while ( 1 ) {
@@ -33,7 +34,7 @@ void* handleConnection(void* aCon)
             if ( length == -1 ) {
                 printf( "\nError while reading." );
                 // TODO errorcodes
-                return (void*) 1;
+                return nullptr;
             } else if ( length != BUFFER_SIZE ) {
                 totalLength = offset + length;
                 break;
@@ -41,7 +42,10 @@ void* handleConnection(void* aCon)
             offset += BUFFER_SIZE;
         }
     }
+
     printf( "\nReceived message from client:\n\t%s", buffer );
+
+
 
     // Check for validity
 
@@ -53,24 +57,12 @@ void* handleConnection(void* aCon)
 
     free( buffer );
 
-    return (void*) 0;
+    return nullptr;
 }
-
-//void* inputConsole()
-//{
-//    char inputBuffer[BUFFERSIZE];
-//    while( 1 ) {
-//        //TODO console for server with command possibilites
-//        //read( 0 , inputBuffer, BUFFER_SIZE);
-//    }
-//}
 
 int start( int aPort )
 {
     printf( "\nStarting server..." );
-
-    //pthread_t inputThreadId;
-    //pthread_create(&inputThreadId, NULL, &inputConsole, NULL);
 
     while ( 1 ) {
         printf( "\nWaiting for connection..." );

@@ -7,6 +7,7 @@
 
 #include <cnaiapi.h>
 #include "request.h"
+#include "httphandler.h"
 
 #define BUFFER_SIZE ( 80 * sizeof(char) )
 
@@ -22,7 +23,9 @@ void* handleConnection(void* aCon)
 
     if ( length == -1 ) {
         printf( "\nError while reading." );
-        // TODO errorcodes
+        /*
+         *  TODO errorcodes
+         */
         return 0;
     } else if ( length == BUFFER_SIZE ) {
         int offset = BUFFER_SIZE;
@@ -33,7 +36,9 @@ void* handleConnection(void* aCon)
 
             if ( length == -1 ) {
                 printf( "\nError while reading." );
-                // TODO errorcodes
+                /*
+                 *  TODO errorcodes
+                 */
                 return 0;
             } else if ( length != BUFFER_SIZE ) {
                 totalLength = offset + length;
@@ -45,11 +50,25 @@ void* handleConnection(void* aCon)
 
     printf( "\nReceived message from client:\n\t%s", buffer );
 
+    struct Request req = parseRequest( buffer );
+
+    if ( req.invalid != 0 ) {
+        printf( "\nInvalid request." );
+        /*
+         *  TODO errorcodes
+         */
+        return 0;
+    }
+    if ( isPathValid( req ) == 0 ) {
+        printf( "\nInvalid path requested: %s", req.path );
+        /*
+         *  TODO errorcodes
+         */
+        return 0;
+    }
 
 
-    // Check for validity
 
-    // Handle HTTP Request
 
     write( con, buffer, totalLength );
 
@@ -76,7 +95,9 @@ int start( int aPort )
         int err;
         err = pthread_create(&dummy, NULL, handleConnection, &con);
         if (err != 0) {
-            // TODO: inform client
+            /*
+             * Inform the client
+             */
             printf("\nCan't create thread: [%s]", strerror(err));
         }
     }

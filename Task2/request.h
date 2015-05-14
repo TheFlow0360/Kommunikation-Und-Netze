@@ -14,4 +14,4 @@ void freeRequest(struct Request const req);
 char const isPathValid(struct Request const req);
 
 
-#endif // REQUEST_H
+#endif

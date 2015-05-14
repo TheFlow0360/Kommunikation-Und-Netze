@@ -1,20 +1,21 @@
 #include <regex.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "httphandler.h"
 
 #define MASK "\(\[a-zA-Z\]\+\?\)\\s\(\.\+\?\)\\s\(\.\*\?\)\\n\\n"
 #define GROUP_COUNT 4
 
-const Request HttpHandler::parseRequest(const char * const aInput)
+struct Request const parseRequest(const char * const aInput)
 {
-    Request result;
+    struct Request result;
 
     regex_t regex;
     regmatch_t matches[GROUP_COUNT];
 
-    if ( regcomp( &regexCompiled, MASK, REG_EXTENDED ) )
+    if ( regcomp( &regex, MASK, REG_EXTENDED ) )
     {
       printf("\nCould not compile regular expression.");
       result.invalid = 1;
@@ -44,5 +45,6 @@ const Request HttpHandler::parseRequest(const char * const aInput)
     }
 
     regfree(&regex);
-    free(matches);
+
+    return result;
 }

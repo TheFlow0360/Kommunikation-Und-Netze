@@ -3,10 +3,6 @@
 
 #include "request.h"
 
-namespace HttpHandler {
+struct Request const parseRequest(char const * const aInput);
 
-    Request const parseRequest(char const * const aInput);
-
-}
-
-#endif // HTTPHANDLER_H
+#endif

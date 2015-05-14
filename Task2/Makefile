@@ -5,8 +5,8 @@ ifeq (64,$(findstring 64,$(shell uname -m)))
 	ARCH64=64
 endif
 
-CC	= gcc
-CFLAGS  += -Wall -g -Iinclude
+CC	= gcc *.c *.h
+CFLAGS  += -Wall -g -Iinclude -Wpedantic -std=c11
 LDFLAGS += -Llib
 LDLIBS  += -lcnaiapi$(ARCH64) -lpthread
 

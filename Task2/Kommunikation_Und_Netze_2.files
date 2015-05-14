@@ -4,3 +4,5 @@ lib/libcnaiapi64.a
 webserver.c
 request.h
 request.c
+httphandler.h
+httphandler.c

@@ -5,6 +5,7 @@ struct Request {
     char  invalid;
     char* command;
     char* path;
+    char* httpVersion;
     char* headers;
 };
 

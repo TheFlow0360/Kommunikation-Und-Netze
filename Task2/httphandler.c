@@ -5,12 +5,12 @@
 
 #include "httphandler.h"
 
-#define MASK "\(\[a-zA-Z\]\+\?\)\\s\(\.\+\?\)\\s\(\.\*\?\)\\n\\n"
-#define GROUP_COUNT 4
+#define MASK "\(\[\[:alpha:\]\]\+\)\[\[:space:\]\]\(\[\[:graph:\]\]\+\)\[\[:space:\]\]HTTP\\/\(\[\[:graph:\]\]\+\)\[\[:space:\]\]\(\[\^\\v\]\*\)"
+#define GROUP_COUNT 5
 
 struct Request const parseRequest(const char * const aInput)
 {
-    struct Request result;
+    struct Request result = newRequest();
 
     regex_t regex;
     regmatch_t matches[GROUP_COUNT];
@@ -34,10 +34,15 @@ struct Request const parseRequest(const char * const aInput)
         result.path = malloc( length );
         strncpy( result.path, aInput + matches[2].rm_so, length);
 
-        // headers
+        // http version
         length = matches[3].rm_eo - matches[3].rm_so;
-        result.path = malloc( length );
-        strncpy( result.path, aInput + matches[3].rm_so, length);
+        result.httpVersion = malloc( length );
+        strncpy( result.httpVersion, aInput + matches[3].rm_so, length);
+
+        // headers
+        length = matches[4].rm_eo - matches[4].rm_so;
+        result.headers = malloc( length );
+        strncpy( result.headers, aInput + matches[4].rm_so, length);
     } else {
         printf("\nInvalid Request.");
         result.invalid = 1;

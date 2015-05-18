@@ -4,12 +4,60 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include <cnaiapi.h>
 #include "request.h"
 #include "httphandler.h"
 
 #define BUFFER_SIZE ( 80 * sizeof(char) )
+#define REQUEST_END "\r\n\r\n"
+#define HTTP_RESPONSE "HTTP/1.0 %d %s" REQUEST_END "\0"
+
+char* knownFileNames[] = {
+    "",
+    "/index.html",
+    "/index.htm",
+    "/index.php",
+    0
+};
+
+char* getFullPath(const char* aPath)
+{
+    char* cwd = malloc( 256 );
+    getcwd( cwd, 256 );
+
+    int cwdLength = strlen( cwd );
+    int pathLength = strlen( aPath );
+
+    char* file = malloc( cwdLength + pathLength + 1 );
+    sprintf( file, "%s%s", cwd, aPath );
+
+    char** fileExtension = knownFileNames;
+    while( *fileExtension ) {
+        // New file name buffer
+        char * fullFileName = malloc( cwdLength + pathLength + strlen( *fileExtension ) + 1 );
+
+        // Combine path + extension
+        sprintf( fullFileName, "%s%s", file, *fileExtension );
+
+        // Check if the new path is a file
+        struct stat s;
+        if( stat( fullFileName, &s ) == 0 && s.st_mode & S_IFREG ) {
+            free( file );
+            return fullFileName;
+        }
+
+        // Temporary resource is no longer needed
+        free( fullFileName );
+
+        ++fileExtension;
+    }
+
+    free( file );
+    return 0;
+
+}
 
 void* handleConnection(void* aCon)
 {
@@ -52,29 +100,80 @@ void* handleConnection(void* aCon)
 
     struct Request req = parseRequest( buffer );
 
+    free( buffer );
+
     if ( req.invalid != 0 ) {
         printf( "\nInvalid request." );
         /*
-         *  TODO errorcodes
+         *  TODO errorcodes -> 400
          */
+        freeRequest(req);
         return 0;
     }
     if ( isPathValid( req ) == 0 ) {
         printf( "\nInvalid path requested: %s", req.path );
         /*
-         *  TODO errorcodes
+         *  TODO errorcodes -> 403
          */
+        freeRequest(req);
         return 0;
     }
 
+    printf("\nGet Full path %s", req.path);
 
+    req.path = getFullPath(req.path);
 
+    if ( !req.path ) {
+        printf( "\nUnknown file." );
+        /*
+         *  TODO errorcodes -> 404
+         */
+        freeRequest(req);
+        return 0;
+    }
 
-    write( con, buffer, totalLength );
+    printf("\nOpen %s", req.path);
+
+    FILE * fd = fopen( req.path, "r" );
+
+    printf("\nFile opened");
+
+    if( !fd )
+    {
+        printf( "\nCould not open file." );
+        /*
+         *  TODO errorcodes -> 403
+         */
+        freeRequest(req);
+        return 0;
+    }
+
+        // TODO write response
+    buffer = (char*) malloc( 1024 );
+    sprintf(buffer, HTTP_RESPONSE, 200, "OK");
+    printf(buffer);
+    if( write( con, buffer, strlen( buffer ) ) > 0 );
+    {
+        int num_bytes = 0;
+
+        char * readbuf = malloc( 1024 );
+        while( !feof( fd ) )
+        {
+            num_bytes = fread( readbuf, 1, 1, fd );
+            if( num_bytes < 0 )
+                break;
+
+            if( write( con, readbuf, num_bytes ) < 0 )
+                break;
+
+        }
+
+        write( con, REQUEST_END, 4 );
+        fclose( fd );
+        free( readbuf );
+    }
 
     end_contact( con );
-
-    free( buffer );
 
     return 0;
 }

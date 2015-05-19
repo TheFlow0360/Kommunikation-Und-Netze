@@ -5,7 +5,7 @@
 
 #include "httphandler.h"
 
-#define MASK "\(\[\[:alpha:\]\]\+\)\[\[:space:\]\]\(\[\[:graph:\]\]\+\)\[\[:space:\]\]HTTP\\/\(\[\[:graph:\]\]\+\)\[\[:space:\]\]\(\[\^\\v\]\*\)"
+#define MASK "([[:alpha:]]+)[[:space:]]+([[:graph:]]+?)[[:space:]]+HTTP\\/([[:graph:]]+?)[[:space:]]*(.*?)\r\n\r\n"
 #define GROUP_COUNT 5
 
 struct Request const parseRequest(const char * const aInput)

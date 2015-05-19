@@ -12,7 +12,7 @@
 
 #define BUFFER_SIZE ( 80 * sizeof(char) )
 #define REQUEST_END "\r\n\r\n"
-#define HTTP_RESPONSE "HTTP/1.0 %d %s" REQUEST_END "\0"
+#define HTTP_RESPONSE "HTTP/1.0 %d %s" REQUEST_END
 
 char* knownFileNames[] = {
     "",
@@ -67,7 +67,6 @@ void* handleConnection(void* aCon)
     printf( "\nConnection with client %d established.", con );
 
     int length = read( con, buffer, BUFFER_SIZE );
-    int totalLength = length;
 
     if ( length == -1 ) {
         printf( "\nError while reading." );
@@ -89,21 +88,22 @@ void* handleConnection(void* aCon)
                  */
                 return 0;
             } else if ( length != BUFFER_SIZE ) {
-                totalLength = offset + length;
                 break;
             }
             offset += BUFFER_SIZE;
         }
     }
 
-    printf( "\nReceived message from client:\n\t%s", buffer );
+    printf("\nMessage from client:\n%s\n", buffer);
 
     struct Request req = parseRequest( buffer );
 
     free( buffer );
 
+    printf("\nReceived request from client:");
+    printRequestData( req );
+
     if ( req.invalid != 0 ) {
-        printf( "\nInvalid request." );
         /*
          *  TODO errorcodes -> 400
          */
@@ -119,8 +119,6 @@ void* handleConnection(void* aCon)
         return 0;
     }
 
-    printf("\nGet Full path %s", req.path);
-
     req.path = getFullPath(req.path);
 
     if ( !req.path ) {
@@ -132,11 +130,7 @@ void* handleConnection(void* aCon)
         return 0;
     }
 
-    printf("\nOpen %s", req.path);
-
     FILE * fd = fopen( req.path, "r" );
-
-    printf("\nFile opened");
 
     if( !fd )
     {
@@ -148,10 +142,9 @@ void* handleConnection(void* aCon)
         return 0;
     }
 
-        // TODO write response
     buffer = (char*) malloc( 1024 );
     sprintf(buffer, HTTP_RESPONSE, 200, "OK");
-    printf(buffer);
+
     if( write( con, buffer, strlen( buffer ) ) > 0 );
     {
         int num_bytes = 0;

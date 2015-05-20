@@ -1,12 +1,16 @@
+#include "httphandler.h"
+
 #include <regex.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "httphandler.h"
-
 #define MASK "([[:alpha:]]+)[[:space:]]+([[:graph:]]+?)[[:space:]]+HTTP\\/([[:graph:]]+?)[[:space:]]*(.*?)\r\n\r\n"
 #define GROUP_COUNT 5
+
+#define REQUEST_END "\r\n\r\n"
+#define HTTP_RESPONSE_HEAD "HTTP/1.0 %d %s" REQUEST_END
+#define HTTP_RESPONSE_CONTENT "<html><body><h1>%d %s</h1></body></html>" REQUEST_END
 
 struct Request const parseRequest(const char * const aInput)
 {
@@ -26,25 +30,28 @@ struct Request const parseRequest(const char * const aInput)
     {
         // command
         int length = matches[1].rm_eo - matches[1].rm_so;
-        result.command = malloc( length );
+        result.command = malloc( length + 1 );
         strncpy( result.command, aInput, length );
+        result.command[ length ] = '\0';
 
         // path
         length = matches[2].rm_eo - matches[2].rm_so;
-        result.path = malloc( length );
+        result.path = malloc( length + 1 );
         strncpy( result.path, aInput + matches[2].rm_so, length);
+        result.path[ length ] = '\0';
 
         // http version
         length = matches[3].rm_eo - matches[3].rm_so;
-        result.httpVersion = malloc( length );
+        result.httpVersion = malloc( length + 1 );
         strncpy( result.httpVersion, aInput + matches[3].rm_so, length);
+        result.httpVersion[ length ] = '\0';
 
         // headers
         length = matches[4].rm_eo - matches[4].rm_so;
-        result.headers = malloc( length );
+        result.headers = malloc( length + 1 );
         strncpy( result.headers, aInput + matches[4].rm_so, length);
+        result.headers[ length ] = '\0';
     } else {
-        printf("\nInvalid Request.");
         result.invalid = 1;
         return result;
     }
@@ -52,4 +59,16 @@ struct Request const parseRequest(const char * const aInput)
     regfree(&regex);
 
     return result;
+}
+
+char const sendHttpResponse(connection aCon, unsigned int const aCode, char const* aText)
+{
+    char* buffer = (char*) malloc( 1024 );
+    sprintf( buffer, HTTP_RESPONSE_HEAD, aCode, aText );
+
+    if ( aCode != 200 ) {
+        sprintf( buffer + strlen( buffer ), HTTP_RESPONSE_CONTENT, aCode, aText );
+    }
+
+    return write( aCon, buffer, strlen( buffer ) ) > 0;
 }

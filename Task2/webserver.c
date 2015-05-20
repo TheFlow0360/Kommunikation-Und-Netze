@@ -1,5 +1,6 @@
 /* webserver.c */
 
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -8,8 +9,6 @@
 #include <cnaiapi.h>
 #include "request.h"
 #include "httphandler.h"
-
-#define BUFFER_SIZE ( 80 * sizeof(char) )
 
 #define STATUS_200 "OK"
 #define ERROR_400 "Bad Request"
@@ -21,39 +20,20 @@
 void* handleConnection(void* aCon)
 {
     connection con = *( (connection*) aCon );
-    char* buffer = (char*) malloc( BUFFER_SIZE );
 
     printf( "\nConnection with client %d established.", con );
 
-    int length = read( con, buffer, BUFFER_SIZE );
-
-    if ( length == -1 ) {
-        printf( "\nError while reading." );
+    char* buffer;
+    if ( readHttpRequest( con, &buffer ) != 0 ) {
+        //printf( "\nError reading message." );
         sendHttpResponse( con, 500, ERROR_500 );
         end_contact( con );
         return 0;
-    } else if ( length == BUFFER_SIZE ) {
-        int offset = BUFFER_SIZE;
-        while ( 1 ) {
-            buffer = (char*) realloc( buffer, BUFFER_SIZE + offset );
-
-            int length = read( con, buffer + offset, BUFFER_SIZE );
-
-            if ( length == -1 ) {
-                printf( "\nError while reading." );
-                sendHttpResponse( con, 500, ERROR_500 );
-                end_contact( con );
-                return 0;
-            } else if ( length != BUFFER_SIZE ) {
-                break;
-            }
-            offset += BUFFER_SIZE;
-        }
     }
 
     struct Request req = parseRequest( buffer );
 
-    printf("\nReceived request from client:");
+    printf( "\nReceived request from client:" );
     printRequestData( &req );
 
     if ( req.invalid != 0 ) {
@@ -135,10 +115,10 @@ void* handleConnection(void* aCon)
 
 int start( int aPort )
 {
-    printf( "\nStarting server..." );
+    signal(SIGPIPE, SIG_IGN);
+    printf( "\nServer ready.");
 
     while ( 1 ) {
-        printf( "\nWaiting for connection..." );
         connection con = await_contact( aPort );
         if ( -1 == con ) {
             printf( "\nError while establishing connection." );

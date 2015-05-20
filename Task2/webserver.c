@@ -108,6 +108,7 @@ void* handleConnection(void* aCon)
         free( readbuf );
     }
 
+    printf( "\nClosing Connection %d", con);
     end_contact( con );
 
     return 0;

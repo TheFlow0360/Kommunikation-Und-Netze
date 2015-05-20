@@ -71,8 +71,9 @@ char const sendHttpResponse(connection aCon, unsigned int const aCode, char cons
     if ( aCode != 200 ) {
         sprintf( buffer + strlen( buffer ), HTTP_RESPONSE_CONTENT, aCode, aText );
     }
-
-    return write( aCon, buffer, strlen( buffer ) ) > 0;
+    char result = write( aCon, buffer, strlen( buffer ) ) > 0;
+    free( buffer );
+    return result;
 }
 
 

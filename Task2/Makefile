@@ -17,4 +17,4 @@ webserver: webserver.c request.c httphandler.c
 
 .PHONY: clean
 clean:
-	; rm -rf *.o $(APPS) ; rm -rf *.dSYM
+	rm -rf *.o $(APPS) ; rm -rf *.dSYM

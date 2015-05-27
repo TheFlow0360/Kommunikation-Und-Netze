@@ -1,0 +1,11 @@
+include/bitmap.h
+include/client.h
+include/controller.h
+include/CVmc.h
+include/robot.h
+src/client-joystick.c
+src/client-keyboard.c
+src/robot-vbot.cpp
+src/robot-vrep.c
+client.c
+server.c

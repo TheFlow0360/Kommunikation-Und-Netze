@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>MJPEG-Streamer</title>
+<style>
+body {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+}
+
+table {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	border-width: 0;
+	border-collapse: collapse;
+	table-layout: fixed;
+}
+
+tr {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+}
+
+td {
+	margin: 0;
+	padding: 0;
+	width: 33%;
+}
+
+tbody {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+}
+
+input {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	min-height: 3vw;
+}
+</style>
+</head>
+<!-- code for changing base uri -->
+<script type="text/javascript">
+
+//var baseuri="http://10.2.1.58:5555";
+//var baseuri="http://localhost:5555";
+var baseuri="http://" + location.host;
+
+var imageNr = 0; // Serial number of current image
+var finished = new Array(); // References to img objects which have finished downloading
+var paused = false;
+
+var drivetimer = 0;
+var imagetimer = 0;
+
+var l=0.0;
+var r=0.0;
+
+function getBaseURI() {
+	var ret = document.getElementById("baseuri").value;
+	ret = ret.trim();
+	ret = ret.toLowerCase();
+	if(ret.substr(0,4) != "http") ret = "http://" + ret;
+	return ret;
+}
+
+function load() {
+	baseuri =  getBaseURI();
+	if(drivetimer != 0) clearTimeout(drivetimer);
+	if(imagetimer != 0) clearTimeout(imagetimer);
+	drivetimer = setInterval("drive()", 500);
+	imagetimer = setInterval("createImageLayer()", 500);
+}
+
+/* Copyright (C) 2007 Richard Atterer, richard©atterer.net
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License, version 2. See the file
+   COPYING for details. */
+
+function createImageLayer() {
+  var img = new Image();
+  //img.style.position = "absolute";
+  img.style.width= "100%";
+  img.style.zIndex = -1;
+  img.onload = imageOnload;
+  img.src = baseuri+"/image?" + imageNr++;
+}
+
+// Two layers are always present (except at the very beginning), to avoid flicker
+function imageOnload() {
+	//this.style.zIndex = imageNr; // Image finished, bring to front!
+	//while (1 < finished.length) {
+	//	var del = finished.shift(); // Delete old image(s) from document
+	//	del.parentNode.removeChild(del);
+	//}
+	//finished.push(this);
+	var webcam = document.getElementById("webcam");
+	//webcam.innerHTML = this.src;
+	webcam.replaceChild(this, webcam.firstChild);
+}
+
+function left()    { l=-0.3; r=+0.3; }
+function right()   { l=+0.3; r=-0.3; }
+function gofwd()   { l=+0.5; r=+0.5; }
+function goback()  { l=-0.5; r=-0.5; }
+function stop()    { l=+0.0; r=+0.0; }
+
+function drive() {
+	baseuri = getBaseURI();
+	var xmlhttp;
+	if (window.XMLHttpRequest)
+	{// code for IE7+, Firefox, Chrome, Opera, Safari
+		xmlhttp=new XMLHttpRequest();
+	}
+	else
+	{// code for IE6, IE5
+		xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xmlhttp.onreadystatechange=function()
+	{
+		// do nothing
+	}
+	xmlhttp.open("GET",baseuri+"/drive?left="+l+"&right="+r,true);
+	xmlhttp.send();
+}
+</script>
+
+<body onload="load();" style="height: 100%; width: 100%; margin: 0; padding: 0;">
+
+<div style="width: 75vh; height: 100%; margin: 0 auto;">
+
+<div id="webcam" style="height:70%; width:100%;">img</div>
+
+<table style="height: 30%;">
+<tr>
+<td></td>
+<td><input type="button" value="^" onclick="gofwd()"></td>
+<td></td>
+</tr>
+<tr>
+<td><input type="button" value="<-" onclick="left()"></td>
+<td><input type="button" value="v" onclick="goback()"></td>
+<td><input type="button" value="->" onclick="right()"></td>
+</tr>
+<tr>
+<td></td>
+<td><input type="button" value="stop" onclick="stop()"></td>
+<td></td>
+</tr>
+<tr><td colspan="3">
+Robot URI: <input type="text" id="baseuri" onchange="load()" style="height: 1em"> <span style="font-size:10pt; color: gray">for example:&nbsp;&nbsp;&nbsp;localhost:5555</span>
+</td></tr>
+</table>
+</div>
+<script>
+document.getElementById("baseuri").value = location.host;
+</script>
+</body>
+</html>

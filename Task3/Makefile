@@ -1,5 +1,5 @@
 # Path to v-rep installation directory
-VREP_FOLDER?=/opt/V-REP_PRO_EDU_V3_1_0_64_Linux/
+VREP_FOLDER?=/home/fkoch/opt/V-REP_PRO_EDU_V3_2_1_64_Linux/
 
 P=$(VREP_FOLDER)/programming
 
@@ -8,7 +8,7 @@ P=$(VREP_FOLDER)/programming
 CFLAGS = -Wall -g3 -O0 -I$(P)/remoteApi -I$(P)/include -Iinclude -DNON_MATLAB_PARSING -DMAX_EXT_API_CONNECTIONS=255 -DUSE_OPENCV
 LDFLAGS = -lpthread -lopencv_highgui -lopencv_core -lopencv_imgproc
 
-OBJS_SERVER = server.o
+OBJS_SERVER = server.o request.o httphandler.o connectionhandler.o 
 OBJS_SERVER_VREP = $(OBJS_SERVER) $(P)/remoteApi/extApi.o $(P)/remoteApi/extApiPlatform.o src/robot-vrep.o
 OBJS_SERVER_VBOT = server.o src/robot-vbot.o
 OBJS_CLIENT = client.o

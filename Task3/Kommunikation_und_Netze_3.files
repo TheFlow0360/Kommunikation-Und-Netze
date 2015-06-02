@@ -9,3 +9,9 @@ src/robot-vbot.cpp
 src/robot-vrep.c
 client.c
 server.c
+httphandler.h
+httphandler.c
+request.c
+request.h
+connectionhandler.c
+connectionhandler.h

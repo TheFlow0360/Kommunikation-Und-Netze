@@ -1,9 +1,10 @@
 #include "connectionhandler.h"
 
+#include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
- #include <sys/un.h>
-#include <stdio.h>
+#include <netinet/in.h>
 
 #define SOCKET_NAME "socket"
 
@@ -14,29 +15,46 @@ computer cname_to_comp(char *cname)
 
 connection await_contact(appnum a)
 {
-    static int server_socket;
+    static int sockfd;
     static char initialized = 0;
-    struct sockaddr_un server;
+
+    struct sockaddr_in serv_addr, cli_addr;
+    int confd;
+    socklen_t clilen;
 
     if ( !initialized ) {
-        unlink(SOCKET_NAME);
 
-        server_socket = socket(AF_UNIX, SOCK_STREAM, 0);
-        if (server_socket < 0) {
-            perror("opening stream socket");
+        initialized = 1;
+
+        sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+        if (sockfd < 0) {
+            perror("ERROR opening socket");
             return -1;
         }
 
-        server.sun_family = AF_UNIX;
-        strcpy(server.sun_path, SOCKET_NAME);
-        if (bind(server_socket, (struct sockaddr *) &server, sizeof(struct sockaddr_un))) {
-            perror("binding stream socket");
+        bzero( (char *) &serv_addr, sizeof( serv_addr ) );
+
+        serv_addr.sin_family = AF_INET;
+        serv_addr.sin_addr.s_addr = INADDR_ANY;
+        serv_addr.sin_port = htons( a );
+
+        if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+            perror("ERROR on binding");
             return -1;
         }
     }
 
-    listen(server_socket, 5);
-    return accept(server_socket, 0, 0);
+    listen( sockfd, 5 );
+    clilen = sizeof( cli_addr );
+
+    confd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
+    if (confd < 0){
+        perror("ERROR on accept");
+        return -1;
+    }
+
+    return confd;
 }
 
 connection make_contact(computer c, appnum a)

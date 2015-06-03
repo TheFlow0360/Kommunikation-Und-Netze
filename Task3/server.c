@@ -117,9 +117,6 @@ void* handleConnection(void* aCon)
 
 int start( int aPort )
 {
-    signal(SIGPIPE, SIG_IGN);
-    printf( "\nServer ready.");
-
     while ( 1 ) {
         connection con = await_contact( aPort );
         if ( -1 == con ) {
@@ -127,15 +124,7 @@ int start( int aPort )
             continue;
         }
 
-        pthread_t dummy;
-        int err;
-        err = pthread_create(&dummy, NULL, handleConnection, &con);
-        if (err != 0) {
-            /*
-             * Inform the client
-             */
-            printf("\nCan't create thread: [%s]", strerror(err));
-        }
+        handleConnection( &con );
     }
 
     return 0;
@@ -145,10 +134,10 @@ int main(int argc,char* argv[])
 {
 	signal(SIGPIPE, SIG_IGN);
 	
-	if(-1 == initializeRob()) {
-		printf("initializeRob()\n");
-		exit(1);
-	}
+    if(-1 == initializeRob()) {
+        printf("initializeRob()\n");
+        exit(1);
+    }
 	
     if ( argc < 2 ) {
         printf( "\nArgument missing: Port" );
@@ -166,7 +155,7 @@ int main(int argc,char* argv[])
 	// shutdown
 	sleep(1);	// required to perform last robot command
 	printf("Simulation finished\n");
-	shutdownRob();
+    shutdownRob();
 
     return(0);
 }

@@ -8,9 +8,9 @@
 
 char* knownFileNames[] = {
     "",
-    "/index.html",
-    "/index.htm",
-    "/index.php",
+    "/webcontrol.html",
+    "/webcontrol.htm",
+    "/webcontrol.php",
     0
 };
 
@@ -102,9 +102,29 @@ void getFullPath(struct Request* const req)
     }
 
     free( file );
+
+    // check if valid command
+
+    char* cmd = "/drive";
+    if ( strncmp( (*req).path, cmd, strlen( cmd ) ) == 0 ) {
+        (*req).cmdDrive = 1;
+        return;
+    }
+
+    cmd = "/image";
+    if ( strncmp( (*req).path, cmd, strlen( cmd ) ) == 0 ) {
+        (*req).cmdImage = 1;
+        return;
+    }
+
+    cmd = "/heartbeat";
+    if ( strcmp( (*req).path, cmd ) == 0 ) {
+        (*req).cmdHeartbeat = 1;
+        return;
+    }
+
     (*req).invalid = 1;
 }
-
 
 void checkCommandValid(struct Request* const req)
 {

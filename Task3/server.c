@@ -77,19 +77,51 @@ void* handleConnection(void* aCon)
         return 0;
     }
 
-    FILE * fd = fopen( req.path, "r" );
 
-    if( !fd )
-    {
-        printf( "\nCould not open file: %s", req.path );
-        sendHttpResponse( con, 403, ERROR_403 );
+    FILE* fd;
+
+    if ( req.cmdHeartbeat ) {
+        sendRobHeartbeat();
+        sendHttpResponse( con, 200, STATUS_200 );
         freeRequest( &req );
         end_contact( con );
         return 0;
+    } else if ( req.cmdDrive ) {
+        float left, right;
+
+        if ( parseDriveCmd( req.path, &left, &right ) != 0 ) {
+            printf( "\nInvalid command syntax: %s", req.path );
+            sendHttpResponse( con, 400, ERROR_400 );
+            freeRequest( &req );
+            end_contact( con );
+            return 0;
+        }
+        setRobSpeed( left, right );
+        sendHttpResponse( con, 200, STATUS_200 );
+        end_contact( con );
+        return 0;
+
+    } else if ( req.cmdImage ) {
+
+        //fd =
+        end_contact( con );
+        return 0;
+    } else {
+
+        fd = fopen( req.path, "r" );
+
+        if( !fd )
+        {
+            printf( "\nCould not open file: %s", req.path );
+            sendHttpResponse( con, 403, ERROR_403 );
+            freeRequest( &req );
+            end_contact( con );
+            return 0;
+        }
+
     }
 
-    if( sendHttpResponse( con, 200, STATUS_200 ) );
-    {
+    if( sendHttpResponse( con, 200, STATUS_200 ) ) {
         int num_bytes = 0;
 
         char * readbuf = malloc( 1024 );

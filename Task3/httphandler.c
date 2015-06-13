@@ -110,3 +110,39 @@ char readHttpRequest(connection aCon, char** const aBuffer)
 
     return -1;
 }
+
+
+char parseDriveCmd(const char * const cmd, float * const left, float * const right)
+{
+    regex_t regex;
+    regmatch_t matches[3];
+
+    if ( regcomp( &regex, "\\/drive\\?left\\=([0-9.\\-]+)\\&right\\=([0-9.\\-]+)", REG_EXTENDED ) )
+    {
+      printf("\nCould not compile regular expression.");
+      return -1;
+    };
+
+    if ( regexec( &regex, cmd, 3, matches, 0 ) == 0 )
+    {
+        // left
+        int length = matches[1].rm_eo - matches[1].rm_so;
+        char* leftStr = malloc( length + 1 );
+        strncpy( leftStr, cmd + matches[1].rm_so, length );
+        leftStr[ length ] = '\0';
+
+        (*left) = atof( leftStr );
+
+        // right
+        length = matches[2].rm_eo - matches[2].rm_so;
+        char* rightStr = malloc( length + 1 );
+        strncpy( rightStr, cmd + matches[2].rm_so, length);
+        rightStr[ length ] = '\0';
+
+        (*right) = atof( rightStr );
+
+        return 0;
+    } else {
+        return -1;
+    }
+}

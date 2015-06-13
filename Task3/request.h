@@ -3,6 +3,9 @@
 
 struct Request {
     char  invalid;
+    char  cmdHeartbeat;
+    char  cmdDrive;
+    char  cmdImage;
     char* command;
     char* path;
     char* httpVersion;
